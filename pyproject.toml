@@ -7,6 +7,7 @@ authors = ["gsy0911 <yoshiki0911@gmail.com>"]
 [tool.poetry.dependencies]
 python = "^3.8"
 pandas = "^1.2.0"
+mojimoji = "^0.0.11"
 
 [tool.poetry.dev-dependencies]
 jupyterlab = "^2.1.1"
