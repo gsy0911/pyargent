@@ -31,13 +31,18 @@ class OneFile:
             whole_one_row_list.extend(one_file.one_row_list)
         return OneFile(raw_text_list=whole_raw_text_list, one_row_list=whole_one_row_list)
 
-    def to_df(self) -> pd.DataFrame:
-        df = pd.DataFrame([asdict(c) for c in self.one_row_list])
-        df = df.replace({"total_billing": "", "count": "", "num": "", "actual_billing": ""}, "0")
-        df = df.astype({
+    def _to_df(self) -> pd.DataFrame:
+        replace_dict = {"total_billing": "", "count": "", "num": "", "actual_billing": ""}
+        astype_dict = {
             "total_billing": "int",
             "count": "int",
             "num": "int",
             "actual_billing": "int"
-        })
+        }
+        return pd.DataFrame([asdict(c) for c in self.one_row_list]) \
+            .replace(replace_dict, "0") \
+            .astype(astype_dict)
+
+    def to_df(self) -> pd.DataFrame:
+        df = self._to_df()
         return df
