@@ -26,14 +26,14 @@ with open("README.md", "r") as fh:
 
 
 setuptools.setup(
-    name="{your_module}",
+    name="pyargent",
     version=VERSION,
-    author="{your_name}",
-    author_email="{your_email}",
+    author="gsy0911",
+    author_email="yoshiki0911@gmail.com",
     description="{description}",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="{github_account_etc}",
+    url="https://github.com/gsy0911/pyargent",
     packages=setuptools.find_packages(),
     install_requires=[
         "some",
@@ -42,7 +42,6 @@ setuptools.setup(
     license="MIT",
     classifiers=[
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Development Status :: 3 - Alpha",
