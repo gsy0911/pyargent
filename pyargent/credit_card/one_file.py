@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field, asdict
+import hashlib
 from typing import List
 
 import pandas as pd
@@ -43,6 +44,74 @@ class OneFile:
             .replace(replace_dict, "0") \
             .astype(astype_dict)
 
-    def to_df(self) -> pd.DataFrame:
+    @staticmethod
+    def _add_group(_df: pd.DataFrame) -> pd.DataFrame:
+        def to_hash(input_str: str) -> str:
+            return hashlib.sha3_256(input_str[:4].encode("cp932")).hexdigest()[:10]
+
+        def get_max_index(same_strings_list: List[str]) -> int:
+            """
+
+            Args:
+                same_strings_list:
+
+            Returns:
+
+            Examples:
+                >>> _input = [
+                >>>     "some_string_4214", "some_string_9951", "some_string_9041"
+                >>> ]
+                >>> get_max_index(_input)
+                len("some_string_")
+
+
+            """
+            max_length = max([len(s) for s in same_strings_list])
+            max_index = 0
+            for i in range(max_length):
+                strings_starts_list = [s[:i + 1] for s in same_strings_list]
+                strings_set = set(strings_starts_list)
+                if len(strings_set) == 1:
+                    max_index = i + 1
+                else:
+                    break
+            return max_index
+
+        def get_max_same_string(same_strings_list: List[str]) -> str:
+            """
+
+            Args:
+                same_strings_list:
+
+            Returns:
+
+            Examples:
+                >>> _input = [
+                >>>     "some_string_4214", "some_string_9951", "some_string_9041"
+                >>> ]
+                >>> get_max_same_string(_input)
+                "some_string_"
+
+            """
+            max_index = get_max_index(same_strings_list)
+            return same_strings_list[0][:max_index]
+
+        # add hash column
+        _df['hash'] = _df['description'].apply(to_hash)
+        hash_dict = {}
+        for _hash, g_df in _df.groupby("hash"):
+            description_list = list(g_df['description'].drop_duplicates().values)
+
+            group = get_max_same_string(description_list)
+            hash_dict[_hash] = {
+                "hash": _hash,
+                "group": group
+            }
+        hash_df = pd.DataFrame.from_dict(hash_dict, orient="index")
+        return pd.merge(_df, hash_df, on="hash", how="inner").drop("hash", axis=1)
+
+    def to_df(self, add_group=True) -> pd.DataFrame:
         df = self._to_df()
+        if add_group:
+            df = self._add_group(_df=df)
         return df
