@@ -110,8 +110,16 @@ class OneFile:
         hash_df = pd.DataFrame.from_dict(hash_dict, orient="index")
         return pd.merge(_df, hash_df, on="hash", how="inner").drop("hash", axis=1)
 
-    def to_df(self, add_group=True) -> pd.DataFrame:
+    @staticmethod
+    def _df_split_date(_df) -> pd.DataFrame:
+        ymd_df = pd.DataFrame(list(_df['date'].apply(lambda x: x.split("/"))), columns=["year", "month", "day"])
+        _df[['year', 'month', 'day']] = ymd_df
+        return _df
+
+    def to_df(self, add_group=True, split_date=True) -> pd.DataFrame:
         df = self._to_df()
         if add_group:
             df = self._add_group(_df=df)
+        if split_date:
+            df = self._df_split_date(_df=df)
         return df
