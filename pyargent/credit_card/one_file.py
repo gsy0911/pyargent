@@ -122,4 +122,14 @@ class OneFile:
             df = self._add_group(_df=df)
         if split_date:
             df = self._df_split_date(_df=df)
+        df.index = pd.to_datetime(df['date'])
+        return df
+
+    def to_chart_df(self, rule="M", date_format="%Y-%m") -> pd.DataFrame:
+        df = self.to_df(split_date=False)
+        df = df.pivot_table(index=df.index, columns='group', values='actual_billing', aggfunc=sum) \
+            .fillna(0) \
+            .resample(rule=rule) \
+            .sum()
+        df.index = [d.strftime(date_format) for d in df.index]
         return df
