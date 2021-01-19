@@ -36,8 +36,9 @@ setuptools.setup(
     url="https://github.com/gsy0911/pyargent",
     packages=setuptools.find_packages(),
     install_requires=[
-        "some",
-        "package"
+        "mojimoji",
+        "pandas",
+        "seaborn",
     ],
     license="MIT",
     classifiers=[
