@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field, asdict
+import hashlib
 from typing import List
 
 import pandas as pd
@@ -31,13 +32,136 @@ class OneFile:
             whole_one_row_list.extend(one_file.one_row_list)
         return OneFile(raw_text_list=whole_raw_text_list, one_row_list=whole_one_row_list)
 
-    def to_df(self) -> pd.DataFrame:
-        df = pd.DataFrame([asdict(c) for c in self.one_row_list])
-        df = df.replace({"total_billing": "", "count": "", "num": "", "actual_billing": ""}, "0")
-        df = df.astype({
+    def _to_df(self) -> pd.DataFrame:
+        replace_dict = {"total_billing": "", "count": "", "num": "", "actual_billing": ""}
+        astype_dict = {
             "total_billing": "int",
             "count": "int",
             "num": "int",
             "actual_billing": "int"
-        })
+        }
+        return pd.DataFrame([asdict(c) for c in self.one_row_list]) \
+            .replace(replace_dict, "0") \
+            .astype(astype_dict)
+
+    @staticmethod
+    def _add_group(_df: pd.DataFrame) -> pd.DataFrame:
+        def to_hash(input_str: str) -> str:
+            return hashlib.sha3_256(input_str[:4].encode("cp932")).hexdigest()[:10]
+
+        def get_max_index(same_strings_list: List[str]) -> int:
+            """
+
+            Args:
+                same_strings_list:
+
+            Returns:
+
+            Examples:
+                >>> _input = [
+                >>>     "some_string_4214", "some_string_9951", "some_string_9041"
+                >>> ]
+                >>> get_max_index(_input)
+                len("some_string_")
+
+
+            """
+            max_length = max([len(s) for s in same_strings_list])
+            max_index = 0
+            for i in range(max_length):
+                strings_starts_list = [s[:i + 1] for s in same_strings_list]
+                strings_set = set(strings_starts_list)
+                if len(strings_set) == 1:
+                    max_index = i + 1
+                else:
+                    break
+            return max_index
+
+        def get_max_same_string(same_strings_list: List[str]) -> str:
+            """
+
+            Args:
+                same_strings_list:
+
+            Returns:
+
+            Examples:
+                >>> _input = [
+                >>>     "some_string_4214", "some_string_9951", "some_string_9041"
+                >>> ]
+                >>> get_max_same_string(_input)
+                "some_string_"
+
+            """
+            max_index = get_max_index(same_strings_list)
+            return same_strings_list[0][:max_index]
+
+        # add hash column
+        _df['hash'] = _df['description'].apply(to_hash)
+        hash_dict = {}
+        for _hash, g_df in _df.groupby("hash"):
+            description_list = list(g_df['description'].drop_duplicates().values)
+
+            group = get_max_same_string(description_list)
+            hash_dict[_hash] = {
+                "hash": _hash,
+                "group": group
+            }
+        hash_df = pd.DataFrame.from_dict(hash_dict, orient="index")
+        return pd.merge(_df, hash_df, on="hash", how="inner").drop("hash", axis=1)
+
+    @staticmethod
+    def _df_split_date(_df) -> pd.DataFrame:
+        ymd_df = pd.DataFrame(list(_df['date'].apply(lambda x: x.split("/"))), columns=["year", "month", "day"])
+        _df[['year', 'month', 'day']] = ymd_df
+        return _df
+
+    def to_df(self, add_group=True, split_date=True) -> pd.DataFrame:
+        """
+
+        Args:
+            add_group:
+            split_date:
+
+        Returns:
+
+        Examples:
+            >>> import glob
+            >>> from pyargent.credit_card import OneFile
+            >>> # set font if MacOS
+            >>> df = OneFile.from_file_path_list(glob.glob("./data/*.csv")).to_df()
+        """
+        df = self._to_df()
+        if add_group:
+            df = self._add_group(_df=df)
+        if split_date:
+            df = self._df_split_date(_df=df)
+        df.index = pd.to_datetime(df['date'])
+        return df
+
+    def to_chart_df(self, rule="M", date_format="%Y-%m") -> pd.DataFrame:
+        """
+
+        Args:
+            rule: resampling interval rule, argument for `resample()`
+            date_format: X-Axis date format
+
+        Returns:
+
+        Examples:
+            >>> import glob
+            >>> import matplotlib.pyplot as plt
+            >>> from pyargent.credit_card import OneFile
+            >>> # set font if MacOS
+            >>> plt.rcParams['font.family'] = 'Apple SD Gothic Neo'
+            >>> chart_df = OneFile.from_file_path_list(glob.glob("./data/*.csv")).to_chart_df(rule="M")
+            >>> shown_description = ["group1", "group2"]
+            >>> df.plot.bar(y=shown_description, alpha=0.6, figsize=(12,3), stacked=True)
+        """
+        df = self.to_df(split_date=False)
+        df = df.pivot_table(index=df.index, columns='group', values='actual_billing', aggfunc=sum) \
+            .fillna(0) \
+            .resample(rule=rule) \
+            .sum()
+        df.index = [d.strftime(date_format) for d in df.index]
         return df
