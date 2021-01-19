@@ -117,6 +117,20 @@ class OneFile:
         return _df
 
     def to_df(self, add_group=True, split_date=True) -> pd.DataFrame:
+        """
+
+        Args:
+            add_group:
+            split_date:
+
+        Returns:
+
+        Examples:
+            >>> import glob
+            >>> from pyargent.credit_card import OneFile
+            >>> # set font if MacOS
+            >>> df = OneFile.from_file_path_list(glob.glob("./data/*.csv")).to_df()
+        """
         df = self._to_df()
         if add_group:
             df = self._add_group(_df=df)
@@ -126,6 +140,24 @@ class OneFile:
         return df
 
     def to_chart_df(self, rule="M", date_format="%Y-%m") -> pd.DataFrame:
+        """
+
+        Args:
+            rule: resampling interval rule, argument for `resample()`
+            date_format: X-Axis date format
+
+        Returns:
+
+        Examples:
+            >>> import glob
+            >>> import matplotlib.pyplot as plt
+            >>> from pyargent.credit_card import OneFile
+            >>> # set font if MacOS
+            >>> plt.rcParams['font.family'] = 'Apple SD Gothic Neo'
+            >>> chart_df = OneFile.from_file_path_list(glob.glob("./data/*.csv")).to_chart_df(rule="M")
+            >>> shown_description = ["group1", "group2"]
+            >>> df.plot.bar(y=shown_description, alpha=0.6, figsize=(12,3), stacked=True)
+        """
         df = self.to_df(split_date=False)
         df = df.pivot_table(index=df.index, columns='group', values='actual_billing', aggfunc=sum) \
             .fillna(0) \
