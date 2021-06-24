@@ -32,7 +32,6 @@ class SalaryDeduction:
     pension_fund: int = field(default_factory=int, metadata={"jp": "年金基金"})
     welfare_pension: int = field(default_factory=int, metadata={"jp": "雇用保険"})
 
-
     def total(self):
         return sum(self.__dict__.values())
 
@@ -40,6 +39,7 @@ class SalaryDeduction:
     def from_dict(data: dict):
         _data = {k: v for k, v in data.items() if k in SalaryDeduction.__dataclass_fields__.keys()}
         return SalaryDeduction(**_data)
+
 
 @dataclass(init=True, order=True)
 class SalaryTax:
@@ -71,6 +71,6 @@ class Salary:
         _data.update({
             "salary_payment": SalaryPayment.from_dict(data),
             "salary_deduction": SalaryDeduction.from_dict(data),
-            "salary_tax": SalaryTax(data)
+            "salary_tax": SalaryTax.from_dict(data)
         })
         return Salary(**_data)
