@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 
 
-@dataclass(init=True, order=True)
+@dataclass(frozen=True)
 class SalaryPayment:
     basic_payment: int = field(default_factory=int, metadata={"jp": "基本給"})
     overtime_fee: int = field(default_factory=int, metadata={"jp": "残業代"})
@@ -24,7 +24,7 @@ class SalaryPayment:
         return SalaryPayment(**_data)
 
 
-@dataclass(init=True, order=True)
+@dataclass(frozen=True)
 class SalaryDeduction:
     health_insurance: int = field(default_factory=int, metadata={"jp": "健康保険"})
     nursing_insurance: int = field(default_factory=int, metadata={"jp": "介護保険"})
@@ -41,7 +41,7 @@ class SalaryDeduction:
         return SalaryDeduction(**_data)
 
 
-@dataclass(init=True, order=True)
+@dataclass(frozen=True)
 class SalaryTax:
     income_tax: int = field(default_factory=int, metadata={"jp": "源泉所得税"})
     resident_tax: int = field(default_factory=int, metadata={"jp": "住民税"})
@@ -56,14 +56,15 @@ class SalaryTax:
         return SalaryTax(**_data)
 
 
-@dataclass(init=True, order=True)
+@dataclass(frozen=True)
 class Salary:
+    version: str = field(default_factory=str, metadata={"jp": "版"})
     payment_date: str = field(default_factory=str, metadata={"jp": "支給日"})
     calc_start_date: str = field(default_factory=str, metadata={"jp": "計算開始日"})
     calc_end_date: str = field(default_factory=str, metadata={"jp": "計算締め日"})
-    salary_payment: SalaryPayment = field(default_factory=SalaryPayment, metadata={"jp": "計算締め日"})
-    salary_deduction: SalaryDeduction = field(default_factory=SalaryDeduction, metadata={"jp": "計算締め日"})
-    salary_tax: SalaryTax = field(default_factory=SalaryTax, metadata={"jp": "計算締め日"})
+    salary_payment: SalaryPayment = field(default_factory=SalaryPayment, metadata={"jp": "給与"})
+    salary_deduction: SalaryDeduction = field(default_factory=SalaryDeduction, metadata={"jp": "保険"})
+    salary_tax: SalaryTax = field(default_factory=SalaryTax, metadata={"jp": "所得税など"})
 
     @staticmethod
     def from_dict(data: dict):
@@ -74,3 +75,7 @@ class Salary:
             "salary_tax": SalaryTax.from_dict(data)
         })
         return Salary(**_data)
+
+    @staticmethod
+    def of():
+        pass
