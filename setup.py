@@ -17,7 +17,7 @@ def get_version(init_file_path):
 
 # get __version__ from __init__.py
 init = os.path.join(
-    os.path.dirname(__file__), '{your_module}', '__init__.py'
+    os.path.dirname(__file__), 'pyargent', '__init__.py'
 )
 VERSION = get_version(init_file_path=init)
 
@@ -36,8 +36,9 @@ setuptools.setup(
     url="https://github.com/gsy0911/pyargent",
     packages=setuptools.find_packages(),
     install_requires=[
-        "some",
-        "package"
+        "mojimoji",
+        "pandas",
+        "seaborn",
     ],
     license="MIT",
     classifiers=[
