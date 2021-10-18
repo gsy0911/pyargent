@@ -1,4 +1,7 @@
+from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field, asdict
+from datetime import datetime
+from typing import List
 
 
 @dataclass(frozen=True)
@@ -63,12 +66,13 @@ class SalaryTax:
 
 @dataclass(frozen=True)
 class Salary:
-    payment_date: str = field(default_factory=str, metadata={"jp": "支給日"})
-    calc_start_date: str = field(default_factory=str, metadata={"jp": "計算開始日"})
-    calc_end_date: str = field(default_factory=str, metadata={"jp": "計算締め日"})
+    payment_date: str = field(default=str, metadata={"jp": "支給日"})
+    calc_start_date: str = field(default=str, metadata={"jp": "計算開始日"})
+    calc_end_date: str = field(default=str, metadata={"jp": "計算締め日"})
     salary_payment: SalaryPayment = field(default_factory=SalaryPayment, metadata={"jp": "給与"})
     salary_deduction: SalaryDeduction = field(default_factory=SalaryDeduction, metadata={"jp": "保険"})
     salary_tax: SalaryTax = field(default_factory=SalaryTax, metadata={"jp": "所得税など"})
+    company: str = field(default=str, metadata={"jp": "所得税など"})
     version: str = field(default="1", metadata={"jp": "版"})
 
     @staticmethod
@@ -113,8 +117,12 @@ class Salary:
         """
         return self.total_payments() - self.total_deductions()
 
+    def dt(self) -> str:
+        return datetime.strptime(self.payment_date, "%Y-%m-%d").strftime("%Y_%m")
+
     @staticmethod
     def of(
+        company: str,
         payment_date: str,
         calc_start_date: str,
         calc_end_date: str,
@@ -132,31 +140,49 @@ class Salary:
         year_end_tax_adjustment: int,
     ) -> "Salary":
         salary_payment = SalaryPayment(
-                basic_payment=basic_payment,
-                overtime_fee=overtime_fee,
-                static_overtime_fee=static_overtime_fee,
-                commuting_fee=commuting_fee,
-            )
+            basic_payment=basic_payment,
+            overtime_fee=overtime_fee,
+            static_overtime_fee=static_overtime_fee,
+            commuting_fee=commuting_fee,
+        )
 
         salary_deduction = SalaryDeduction(
             health_insurance=health_insurance,
             nursing_insurance=nursing_insurance,
             welfare_pension=welfare_pension,
             pension_fund=pension_fund,
-            employment_insurance=employment_insurance
+            employment_insurance=employment_insurance,
         )
 
         salary_tax = SalaryTax(
-            income_tax=income_tax,
-            inhabitant_tax=inhabitant_tax,
-            year_end_tax_adjustment=year_end_tax_adjustment
+            income_tax=income_tax, inhabitant_tax=inhabitant_tax, year_end_tax_adjustment=year_end_tax_adjustment
         )
 
         return Salary(
+            company=company,
             payment_date=payment_date,
             calc_start_date=calc_start_date,
             calc_end_date=calc_end_date,
             salary_payment=salary_payment,
             salary_deduction=salary_deduction,
-            salary_tax=salary_tax
+            salary_tax=salary_tax,
         )
+
+
+@dataclass(frozen=True)
+class SalaryRepository(metaclass=ABCMeta):
+    @staticmethod
+    def file_name(salary: Salary) -> str:
+        return f"{salary.dt()}_{salary.company}.json"
+
+    @abstractmethod
+    def path(self) -> str:
+        raise NotImplementedError
+
+    @abstractmethod
+    def save(self, salary: Salary):
+        raise NotImplementedError
+
+    @abstractmethod
+    def load(self, dt: str) -> List[Salary]:
+        raise NotImplementedError

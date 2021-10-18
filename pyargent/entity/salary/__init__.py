@@ -1,1 +1,1 @@
-from .salary import Salary, SalaryDeduction, SalaryTax, SalaryPayment
+from .salary import Salary, SalaryDeduction, SalaryTax, SalaryPayment, SalaryRepository
