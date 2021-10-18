@@ -14,15 +14,16 @@ class SalaryS3(SalaryRepository):
     fs = s3fs.S3FileSystem(anon=False)
 
     def path(self):
-        return f"{self.s3_bucket}/{self.prefix}"
+        return f"s3://{self.s3_bucket}/{self.prefix}"
 
-    def save(self, salary: Salary):
-        path = f"{self.path}/{self.file_name(salary=salary)}"
+    def save(self, salary: Salary) -> str:
+        path = f"{self.path()}/{self.file_name(salary=salary)}"
         with self.fs.open(path, "w") as f:
-            json.dump(salary.dumps, f)
+            json.dump(salary.dumps(), f)
+        return path
 
     def load(self, dt: str) -> List[Salary]:
-        path_candidate = f"{self.path}/{dt}*"
+        path_candidate = f"{self.path()}/{dt}*"
         file_list = self.fs.glob(path_candidate)
         print(file_list)
         return []
@@ -36,7 +37,10 @@ class SalaryLocal(SalaryRepository):
         return self.prefix
 
     def save(self, salary: Salary):
-        raise NotImplementedError
+        path = f"{self.path()}/{self.file_name(salary=salary)}"
+        with open(path, "w") as f:
+            json.dump(salary.dumps(), f)
 
     def load(self, dt: str) -> List[Salary]:
-        raise NotImplementedError
+        path_candidate = f"{self.path()}/{dt}*"
+        return []
