@@ -23,15 +23,7 @@ class OneRow:
     ACTUAL_BILLING = r"(?P<actual_billing>-?[0-9]*)"
     COMMENT = r"(?P<comment>[^,.]*)"
 
-    PATTERN_LIST_1 = [
-        DATE,
-        DESCRIPTION,
-        TOTAL_BILLING,
-        COUNT,
-        NUM,
-        ACTUAL_BILLING,
-        COMMENT
-    ]
+    PATTERN_LIST_1 = [DATE, DESCRIPTION, TOTAL_BILLING, COUNT, NUM, ACTUAL_BILLING, COMMENT]
 
     @classmethod
     def from_text(cls, text: str):
@@ -43,15 +35,7 @@ class OneRow:
 
     @staticmethod
     def format_str(text: str) -> str:
-        table = str.maketrans({
-            '\u3000': '',
-            ' ': '',
-            '\t': '',
-            '\n': '',
-            "－": "ー",
-            "−": "ー",
-            "―": "ー"
-        })
+        table = str.maketrans({"\u3000": "", " ": "", "\t": "", "\n": "", "－": "ー", "−": "ー", "―": "ー"})
         _text = text.translate(table)
         _text = mojimoji.zen_to_han(_text, kana=False)
         _text = mojimoji.han_to_zen(_text, digit=False, ascii=False)
