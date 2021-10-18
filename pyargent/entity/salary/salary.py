@@ -40,7 +40,7 @@ class SalaryDeduction:
 @dataclass(frozen=True)
 class SalaryTax:
     income_tax: int = field(default_factory=int, metadata={"jp": "源泉所得税"})
-    resident_tax: int = field(default_factory=int, metadata={"jp": "住民税"})
+    inhabitant_tax: int = field(default_factory=int, metadata={"jp": "住民税"})
     year_end_tax_adjustment: int = field(default_factory=int, metadata={"jp": "年末調整"})
 
     def total(self):
@@ -74,6 +74,33 @@ class Salary:
         )
         return Salary(**_data)
 
+    def total_payments(self) -> int:
+        """
+        総支給額
+
+        Returns:
+
+        """
+        return self.salary_payment.total()
+
+    def total_deductions(self) -> int:
+        """
+        控除額合計
+
+        Returns:
+
+        """
+        return self.salary_deduction.total() + self.salary_tax.total()
+
+    def net_payment(self) -> int:
+        """
+        差引支給額
+
+        Returns:
+
+        """
+        return self.total_payments() - self.total_deductions()
+
     @staticmethod
     def of(
         payment_date: str,
@@ -89,7 +116,7 @@ class Salary:
         pension_fund: int,
         employment_insurance: int,
         income_tax: int,
-        resident_tax: int,
+        inhabitant_tax: int,
         year_end_tax_adjustment: int,
     ) -> "Salary":
         salary_payment = SalaryPayment(
@@ -109,7 +136,7 @@ class Salary:
 
         salary_tax = SalaryTax(
             income_tax=income_tax,
-            resident_tax=resident_tax,
+            inhabitant_tax=inhabitant_tax,
             year_end_tax_adjustment=year_end_tax_adjustment
         )
 
