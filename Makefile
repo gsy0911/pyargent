@@ -38,3 +38,8 @@ build: ## build image ## make build
 .PHONY: start
 start: ## start local ## make start
 	@docker run -p 8001:8001 -it python/streamlit streamlit run app.py
+
+
+.PHONY: format
+format: ## format with black ## make format
+	black pyargent --line-length 120
