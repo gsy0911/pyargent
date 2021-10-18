@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, asdict
 
 
 @dataclass(frozen=True)
@@ -19,6 +19,9 @@ class SalaryPayment:
         _data = {k: v for k, v in data.items() if k in SalaryPayment.__dataclass_fields__.keys()}
         return SalaryPayment(**_data)
 
+    def dumps(self):
+        return asdict(self)
+
 
 @dataclass(frozen=True)
 class SalaryDeduction:
@@ -36,6 +39,9 @@ class SalaryDeduction:
         _data = {k: v for k, v in data.items() if k in SalaryDeduction.__dataclass_fields__.keys()}
         return SalaryDeduction(**_data)
 
+    def dumps(self):
+        return asdict(self)
+
 
 @dataclass(frozen=True)
 class SalaryTax:
@@ -50,6 +56,9 @@ class SalaryTax:
     def loads(data: dict):
         _data = {k: v for k, v in data.items() if k in SalaryTax.__dataclass_fields__.keys()}
         return SalaryTax(**_data)
+
+    def dumps(self):
+        return asdict(self)
 
 
 @dataclass(frozen=True)
@@ -73,6 +82,9 @@ class Salary:
             }
         )
         return Salary(**_data)
+
+    def dumps(self):
+        return asdict(self)
 
     def total_payments(self) -> int:
         """
