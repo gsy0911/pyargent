@@ -23,10 +23,16 @@ class SalaryS3(SalaryRepository):
         return path
 
     def load(self, dt: str) -> List[Salary]:
-        path_candidate = f"{self.path()}/{dt}*"
-        file_list = self.fs.glob(path_candidate)
-        print(file_list)
-        return []
+        path_candidate = f"{self.path()}/{dt.replace('-', '_')}*"
+        path_list = self.fs.glob(path_candidate)
+
+        salary_list = []
+        for path in path_list:
+            print(path)
+            with self.fs.open(path, "r") as f:
+                data = json.load(f)
+                salary_list.append(Salary.loads(data=data))
+        return salary_list
 
 
 @dataclass(frozen=True)

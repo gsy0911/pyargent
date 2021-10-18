@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional
+from typing import List, Optional
 from injector import Injector, inject
 
 from pyargent.entity.salary import Salary, SalaryTax, SalaryPayment, SalaryDeduction, SalaryRepository
@@ -19,11 +19,11 @@ __all__ = ["py_argent"]
 class PyArgent:
     salary_repository: SalaryRepository
 
-    def save_salary(self, salary: Salary):
-        self.salary_repository.save(salary=salary)
+    def save_salary(self, salary: Salary) -> str:
+        return self.salary_repository.save(salary=salary)
 
-    def load_salary(self, dt: str):
-        self.salary_repository.load(dt=dt)
+    def load_salary(self, dt: str) -> List[Salary]:
+        return self.salary_repository.load(dt=dt)
 
 
 def py_argent(storage: str, prefix: str, s3_bucket: Optional[str] = None) -> PyArgent:

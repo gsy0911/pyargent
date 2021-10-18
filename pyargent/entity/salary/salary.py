@@ -10,6 +10,7 @@ class SalaryPayment:
     overtime_fee: int = field(default_factory=int, metadata={"jp": "残業代"})
     static_overtime_fee: int = field(default_factory=int, metadata={"jp": "固定残業代"})
     commuting_fee: int = field(default_factory=int, metadata={"jp": "通勤（非課税）"})
+    additional_allowance: int = field(default_factory=int, metadata={"jp": "その他手当"})
 
     def total(self):
         return sum(self.__dict__.values())
@@ -80,9 +81,9 @@ class Salary:
         _data = {k: v for k, v in data.items() if k in ["payment_date", "calc_start_date", "calc_end_date"]}
         _data.update(
             {
-                "salary_payment": SalaryPayment.loads(data),
-                "salary_deduction": SalaryDeduction.loads(data),
-                "salary_tax": SalaryTax.loads(data),
+                "salary_payment": SalaryPayment.loads(data.get("salary_payment", {})),
+                "salary_deduction": SalaryDeduction.loads(data.get("salary_deduction", {})),
+                "salary_tax": SalaryTax.loads(data.get("salary_tax", {})),
             }
         )
         return Salary(**_data)
@@ -130,6 +131,7 @@ class Salary:
         overtime_fee: int,
         static_overtime_fee: int,
         commuting_fee: int,
+        additional_allowance: int,
         health_insurance: int,
         nursing_insurance: int,
         welfare_pension: int,
@@ -144,6 +146,7 @@ class Salary:
             overtime_fee=overtime_fee,
             static_overtime_fee=static_overtime_fee,
             commuting_fee=commuting_fee,
+            additional_allowance=additional_allowance
         )
 
         salary_deduction = SalaryDeduction(
